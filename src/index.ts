@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { ethers, Interface, parseEther } from "ethers";
+import { ethers, Interface, parseEther, parseUnits } from "ethers";
 import axios from "axios";
 import { maxUint256 } from "viem";
 
@@ -9,19 +9,20 @@ import { maxUint256 } from "viem";
 // # Note : to-sandbox-id is the sandbox id of the destination chain
 const API_URL =
   "https://api.buildbear.io/{from-sandbox-id}/plugin/lifi/{to-sandbox-id}";
-const RPC_URL = "https://rpc.buildbear.io/{from-sandbox-id}";
+const RPC_URL = "https://rpc.buildbear.io/uzair";
 
 // Get a quote for your desired transfer
 const getQuote = async (
-  fromChain: string,
-  toChain: string,
+  fromChain: string | number,
+  toChain: string | number,
   fromToken: string,
   toToken: string,
   fromAmount: string,
   fromAddress: string
 ) => {
   try {
-    const result = await axios.get(`${API_URL}/quote`, {
+    const result = await axios.get(`https://li.quest/v1/quote`, {
+      // const result = await axios.get(`${API_URL}/quote`, {
       params: {
         fromChain,
         toChain,
@@ -31,6 +32,9 @@ const getQuote = async (
         fromAddress,
       },
     });
+    console.log("=============LIFI QUOTE===============");
+    console.log(result.data);
+    console.log("====================================");
     return result.data;
   } catch (error: any) {
     console.error(
@@ -53,26 +57,32 @@ const encodeApprovalCallData = (spender: string, amount: string) => {
 const sendTransaction = async (
   provider: ethers.JsonRpcProvider,
   signer: ethers.Wallet,
-  transactionRequest: { to: string; data: string; gasLimit: `0x${string}` },
+  transactionRequest: { to: string; data: string; gasLimit?: `0x${string}` },
   isApproval = false
 ) => {
   try {
-    const tx = await signer.sendTransaction({
-      to: transactionRequest.to,
-      data: transactionRequest.data,
-      gasLimit: parseInt(transactionRequest.gasLimit, 16).toString(),
-    });
+    signer.connect(provider);
 
-    console.log(`Transaction Sent! Hash: ${tx.hash}`);
+    const tx = await signer.sendTransaction(
+      transactionRequest.gasLimit
+        ? {
+            to: transactionRequest.to,
+            data: transactionRequest.data,
+            gasLimit: parseInt(transactionRequest.gasLimit, 16).toString(),
+          }
+        : { to: transactionRequest.to, data: transactionRequest.data }
+    );
+    await tx.wait();
+
+    console.log(
+      `${
+        isApproval ? "Approval" : "LiFi Aggregator/Bridging"
+      } Transaction Sent! Hash: ${tx.hash}`
+    );
     console.log("Waiting for confirmation...");
 
     const receipt = await provider.getTransactionReceipt(tx.hash);
-    while (!receipt) {
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-    }
-
     console.log("Transaction Confirmed!");
-    printEventLogs(receipt, isApproval);
     return receipt;
   } catch (error) {
     console.error("Transaction Error:", error);
@@ -80,43 +90,26 @@ const sendTransaction = async (
   }
 };
 
-// Extract and log emitted events
-const printEventLogs = (
-  receipt: ethers.TransactionReceipt,
-  isApproval: boolean
-) => {
-  console.log(`\n🔹 ${isApproval ? "Approval" : "Bridge"} Transaction Logs:\n`);
-
-  const iface = new Interface([
-    "event Approval(address indexed owner, address indexed spender, uint256 value)",
-    "event Transfer(address indexed from, address indexed to, uint256 value)",
-    "event LiFiTransferStarted(bytes32 transactionId, string bridge, string integrator, address referrer, address sendingAssetId, address receiver, uint256 minAmount, uint256 destinationChainId, bool hasSourceSwaps, bool hasDestinationCall)",
-  ]);
-
-  receipt.logs.forEach((log, index) => {
-    try {
-      const parsedLog = iface.parseLog(log);
-      console.log(`Event ${index + 1}: ${parsedLog?.name}`);
-      parsedLog?.args.forEach((arg, key) => {
-        console.log(`  ${key}: ${arg.toString()}`);
-      });
-      console.log("---------------------------------");
-    } catch (err) {
-      console.log(`Unrecognized Log: ${JSON.stringify(log, null, 2)}`);
-    }
-  });
-};
-
 // Main Execution Flow
 const run = async () => {
   const provider = new ethers.JsonRpcProvider(RPC_URL);
   const signer = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
 
-  const fromChain = "ETH";
-  const fromToken = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
+  // ----------- WETH Bridge Polygon to Ethereum -----------
+  // const fromChain = 137;
+  // const fromToken = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
+  // const toChain = 1;
+  // const toToken = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
+  // const fromAmount = parseUnits("1", 18).toString();
+  // const fromAddress = signer.address;
+
+  // ----------- Lifi aggregator swap DAI to USDC on Polygon -----------
+
+  const fromChain = "POL";
+  const fromToken = "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063";
   const toChain = "POL";
   const toToken = "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359";
-  const fromAmount = "10000000000";
+  const fromAmount = parseUnits("1", 18).toString();
   const fromAddress = signer.address;
 
   const quote = await getQuote(
