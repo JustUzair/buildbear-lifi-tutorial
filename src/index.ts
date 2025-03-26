@@ -31,6 +31,9 @@ const getQuote = async (
         fromAddress,
       },
     });
+    console.log("=============LIFI QUOTE===============");
+    console.log(result.data);
+    console.log("====================================");
     return result.data;
   } catch (error: any) {
     console.error(
