@@ -128,24 +128,8 @@ const simulateTransaction = async (transactionRequest: any) => {
       }
     );
 
-    // console.log("====================================");
-    // console.log(response.data);
-    // console.log("====================================");
     const approvalSimulation = response.data.simulation_results[0];
     const bridgeSimulation = response.data.simulation_results[1];
-
-    // Write to file for reference
-    // writeFileSync(
-    //   "simulation-result.json",
-    //   JSON.stringify(
-    //     {
-    //       "🟢 Approval Simulation": approvalSimulation,
-    //       "🟢 Bridge Simulation": bridgeSimulation,
-    //     },
-    //     null,
-    //     2
-    //   )
-    // );
 
     // Print event logs immediately
     printEventLogs(approvalSimulation, "Approval Simulation");
