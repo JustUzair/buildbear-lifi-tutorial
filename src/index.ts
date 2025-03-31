@@ -1,7 +1,13 @@
 import "dotenv/config";
 import { ethers, Interface, parseEther, parseUnits } from "ethers";
 import axios from "axios";
-import { maxUint256 } from "viem";
+import {
+  maxUint256,
+  defineChain,
+  createPublicClient,
+  http,
+  erc20Abi,
+} from "viem";
 
 // BuildBear API Configuration
 // # Note : Replace from-sandbox-id & to-sandbox-id with actual sandbox id from BuildBear
@@ -9,7 +15,29 @@ import { maxUint256 } from "viem";
 // # Note : to-sandbox-id is the sandbox id of the destination chain
 const API_URL =
   "https://api.buildbear.io/{from-sandbox-id}/plugin/lifi/{to-sandbox-id}";
-const RPC_URL = "https://rpc.buildbear.io/still-blackpanther-c3c32262";
+const RPC_URL = "https://rpc.dev.buildbear.io/shaky-wong-9d048597";
+
+const BBSandboxNetwork = /*#__PURE__*/ defineChain({
+  id: 1, // IMPORTANT : replace this with your sandbox's chain id
+  name: "BuildBear x Mainnet Sandbox", // name your network
+  nativeCurrency: { name: "BBETH", symbol: "BBETH", decimals: 18 }, // native currency of forked network
+  rpcUrls: {
+    default: {
+      http: [RPC_URL],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: "BuildBear x Mainnet Scan", // block explorer for network
+      url: `https://explorer.buildbear.io/still-blackpanther-c3c32262}`,
+    },
+  },
+});
+
+export const publicClient = createPublicClient({
+  chain: BBSandboxNetwork,
+  transport: http(RPC_URL), //@>>> Put in buildbear rpc
+});
 
 // Get a quote for your desired transfer
 const getQuote = async (
@@ -100,7 +128,10 @@ const run = async () => {
   // const fromToken = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"; // WETH
   // const toChain = 137; // Polygon
   // const toToken = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"; // WETH
-  // const fromAmount = parseUnits("1", 18).toString();
+  //   const fromAmount = parseUnits(
+  //     "1",
+  //     await getTokenDecimals(fromToken)
+  //   ).toString();
   // const fromAddress = signer.address;
 
   // ----------- Lifi aggregator swap DAI to USDC on Polygon -----------
@@ -109,7 +140,10 @@ const run = async () => {
   const fromToken = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"; // USDC
   const toChain = "ETH"; // Ethereum
   const toToken = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"; // WETH
-  const fromAmount = parseUnits("1000", 6).toString();
+  const fromAmount = parseUnits(
+    "100",
+    await getTokenDecimals(fromToken)
+  ).toString();
   const fromAddress = signer.address;
 
   const quote = await getQuote(
@@ -135,5 +169,14 @@ const run = async () => {
   // Execute Bridging Transaction
   await sendTransaction(provider, signer, quote.transactionRequest, false);
 };
+
+async function getTokenDecimals(tokenAddress: `0x${string}`): Promise<number> {
+  let res = await publicClient.readContract({
+    address: tokenAddress,
+    abi: erc20Abi,
+    functionName: "decimals",
+  });
+  return res as number;
+}
 
 run().then(() => console.log("✅ DONE!"));
