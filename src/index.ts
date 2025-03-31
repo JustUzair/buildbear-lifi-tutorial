@@ -16,6 +16,7 @@ import {
 const API_URL =
   "https://api.buildbear.io/{from-sandbox-id}/plugin/lifi/{to-sandbox-id}";
 const RPC_URL = "https://rpc.dev.buildbear.io/shaky-wong-9d048597";
+const SANDBOX_ID = "shaky-wong-9d048597"; // Replace with your sandbox id
 
 const BBSandboxNetwork = /*#__PURE__*/ defineChain({
   id: 1, // IMPORTANT : replace this with your sandbox's chain id
@@ -29,7 +30,7 @@ const BBSandboxNetwork = /*#__PURE__*/ defineChain({
   blockExplorers: {
     default: {
       name: "BuildBear x Mainnet Scan", // block explorer for network
-      url: `https://explorer.buildbear.io/still-blackpanther-c3c32262}`,
+      url: `https://explorer.buildbear.io/${SANDBOX_ID}}`,
     },
   },
 });
@@ -105,7 +106,11 @@ const sendTransaction = async (
     console.log(
       `${
         isApproval ? "Approval" : "LiFi Aggregator/Bridging"
-      } Transaction Sent! Hash: ${tx.hash}`
+      } Transaction Sent!\n Hash: ${
+        tx.hash
+      }\n View on Explorer: https://explorer.dev.buildbear.io/${SANDBOX_ID}/tx/${
+        tx.hash
+      }`
     );
     console.log("Waiting for confirmation...");
 
@@ -128,11 +133,10 @@ const run = async () => {
   // const fromToken = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"; // WETH
   // const toChain = 137; // Polygon
   // const toToken = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"; // WETH
-  //   const fromAmount = parseUnits(
-  //     "1",
-  //     await getTokenDecimals(fromToken)
-  //   ).toString();
-  // const fromAddress = signer.address;
+  // const fromAmount = parseUnits(
+  //   "1",
+  //   await getTokenDecimals(fromToken)
+  // ).toString();
 
   // ----------- Lifi aggregator swap DAI to USDC on Polygon -----------
 
