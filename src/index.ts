@@ -9,7 +9,7 @@ import { maxUint256 } from "viem";
 // # Note : to-sandbox-id is the sandbox id of the destination chain
 const API_URL =
   "https://api.buildbear.io/{from-sandbox-id}/plugin/lifi/{to-sandbox-id}";
-const RPC_URL = "https://rpc.buildbear.io/uzair";
+const RPC_URL = "https://rpc.buildbear.io/still-blackpanther-c3c32262";
 
 // Get a quote for your desired transfer
 const getQuote = async (
@@ -95,21 +95,21 @@ const run = async () => {
   const provider = new ethers.JsonRpcProvider(RPC_URL);
   const signer = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
 
-  // ----------- WETH Bridge Polygon to Ethereum -----------
-  // const fromChain = 137;
-  // const fromToken = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
-  // const toChain = 1;
-  // const toToken = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
+  // ----------- WETH Bridge Ethereum to Polygon -----------
+  // const fromChain = 1; // Ethereum
+  // const fromToken = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"; // WETH
+  // const toChain = 137; // Polygon
+  // const toToken = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"; // WETH
   // const fromAmount = parseUnits("1", 18).toString();
   // const fromAddress = signer.address;
 
   // ----------- Lifi aggregator swap DAI to USDC on Polygon -----------
 
-  const fromChain = "POL";
-  const fromToken = "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063";
-  const toChain = "POL";
-  const toToken = "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359";
-  const fromAmount = parseUnits("1", 18).toString();
+  const fromChain = "ETH"; // Ethereum
+  const fromToken = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"; // USDC
+  const toChain = "ETH"; // Ethereum
+  const toToken = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"; // WETH
+  const fromAmount = parseUnits("1000", 6).toString();
   const fromAddress = signer.address;
 
   const quote = await getQuote(
