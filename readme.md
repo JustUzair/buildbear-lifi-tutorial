@@ -1,6 +1,13 @@
 # Introduction
 
-This tutorial repo contains the steps and necessary code to swap on lifi aggregator as well as use the best possible bridge quote provided by LiFi
+This tutorial repo contains the steps and necessary code to swap on BuildBear Lifi Plugin with lifi aggregator as well as configurations to intiate a cross chain bridge using similar steps.
+
+You will learn to:
+
+- Install & configure LiFi Plugin on BuildBear Sandbox
+- Call LiFi Plugin API URL to get swap/bridge quotes
+- Use quote results to populate a transaction
+- Send transaction to initiate a swap/bridge on BuildBear with LiFi Plugin
 
 # Installation & Executing the script
 
