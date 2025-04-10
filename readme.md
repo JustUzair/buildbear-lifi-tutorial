@@ -14,7 +14,7 @@ You will learn to:
 Clone the repository, install the required dependencie, and run the script
 
 ```bash
-https://github.com/JustUzair/buildbear-lifi-tutorial.git
+git clone https://github.com/JustUzair/buildbear-lifi-tutorial.git
 cd buildbear-lifi-tutorial
 npm i
 npm start
