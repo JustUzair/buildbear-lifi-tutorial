@@ -1,5 +1,12 @@
 import "dotenv/config";
-import { ethers, Interface, parseEther, parseUnits } from "ethers";
+import {
+  ethers,
+  Interface,
+  parseEther,
+  parseUnits,
+  Wallet,
+  ZeroAddress,
+} from "ethers";
 import axios from "axios";
 import {
   maxUint256,
@@ -15,8 +22,8 @@ import {
 // # Note : to-sandbox-id is the sandbox id of the destination chain
 const API_URL =
   "https://api.buildbear.io/{from-sandbox-id}/plugin/lifi/{to-sandbox-id}";
-const RPC_URL = "https://rpc.dev.buildbear.io/shaky-wong-9d048597";
-const SANDBOX_ID = "shaky-wong-9d048597"; // Replace with your sandbox id
+const RPC_URL = "https://rpc.buildbear.io/{from-sandbox-id}";
+const SANDBOX_ID = RPC_URL.split("https://rpc.buildbear.io/")[1]; // Replace with your sandbox id
 
 const BBSandboxNetwork = /*#__PURE__*/ defineChain({
   id: 1, // IMPORTANT : replace this with your sandbox's chain id
@@ -50,8 +57,7 @@ const getQuote = async (
   fromAddress: string
 ) => {
   try {
-    const result = await axios.get(`https://li.quest/v1/quote`, {
-      // const result = await axios.get(`${API_URL}/quote`, {
+    const result = await axios.get(`${API_URL}/quote`, {
       params: {
         fromChain,
         toChain,
@@ -108,7 +114,7 @@ const sendTransaction = async (
         isApproval ? "Approval" : "LiFi Aggregator/Bridging"
       } Transaction Sent!\n Hash: ${
         tx.hash
-      }\n View on Explorer: https://explorer.dev.buildbear.io/${SANDBOX_ID}/tx/${
+      }\n View on Explorer: https://explorer.buildbear.io/${SANDBOX_ID}/tx/${
         tx.hash
       }`
     );
@@ -126,28 +132,31 @@ const sendTransaction = async (
 // Main Execution Flow
 const run = async () => {
   const provider = new ethers.JsonRpcProvider(RPC_URL);
-  const signer = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
+  let signer;
+  if (process.env.MNEMONIC) {
+    signer = Wallet.fromPhrase(process.env.MNEMONIC, provider);
+  } else {
+    signer = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
+  }
 
-  // ----------- WETH Bridge Ethereum to Polygon -----------
-  // const fromChain = 1; // Ethereum
-  // const fromToken = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"; // WETH
-  // const toChain = 137; // Polygon
-  // const toToken = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"; // WETH
-  // const fromAmount = parseUnits(
-  //   "1",
-  //   await getTokenDecimals(fromToken)
-  // ).toString();
+  console.log(`Signer Address: ${signer.address}`);
+
+  // ----------- WETH Bridge Polygon to Ethereum -----------
+  // # Note: Uncomment the below params to fetch and execute bridging tx
+  // const fromChain = 137;
+  // const fromToken = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
+  // const toChain = 1;
+  // const toToken = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
+  // const fromAmount = parseUnits("1", 18).toString();
+  // const fromAddress = signer.address;
 
   // ----------- Lifi aggregator swap DAI to USDC on Polygon -----------
 
-  const fromChain = "ETH"; // Ethereum
-  const fromToken = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"; // USDC
-  const toChain = "ETH"; // Ethereum
-  const toToken = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"; // WETH
-  const fromAmount = parseUnits(
-    "100",
-    await getTokenDecimals(fromToken)
-  ).toString();
+  const fromChain = "POL";
+  const fromToken = "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063";
+  const toChain = "POL";
+  const toToken = "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359";
+  const fromAmount = parseUnits("1", 18).toString();
   const fromAddress = signer.address;
 
   const quote = await getQuote(
