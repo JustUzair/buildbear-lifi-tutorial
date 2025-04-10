@@ -7,6 +7,8 @@ This tutorial repo contains the steps and necessary code to swap on lifi aggrega
 Clone the repository, install the required dependencie, and run the script
 
 ```bash
+https://github.com/JustUzair/buildbear-lifi-tutorial.git
+cd buildbear-lifi-tutorial
 npm i
 npm start
 ```
@@ -15,6 +17,7 @@ npm start
 
 ```bash
 PRIVATE_KEY=
+MNEMONIC=""
 ```
 
 If script is setup correctly, and all environment variables are setup correctly, an output similar to the ones below can be observed
