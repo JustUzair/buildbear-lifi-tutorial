@@ -22,6 +22,8 @@ npm start
 
 ## Environment Variable
 
+Any one of the below variables need to be defined:
+
 ```bash
 PRIVATE_KEY=
 MNEMONIC=""
